@@ -6,12 +6,15 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OData.Edm;
+using SqlKata.Compilers;
+using SqlKata.Execution;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,9 +34,20 @@ namespace asp_odata_api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ApplicationContext>(op => op.UseSqlServer(Configuration.GetConnectionString("SqlServer")));
             services.AddControllers();
             services.AddOData();
+
+            services.AddDbContext<ApplicationContext>(op => op.UseSqlServer(Configuration.GetConnectionString("SqlServer")));
+
+            services.AddScoped(factory =>
+            {
+                return new QueryFactory
+                {
+                    Compiler = new SqlServerCompiler(),
+                    Connection = new SqlConnection(Configuration.GetConnectionString("SqlServer"))
+                };
+            });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -54,6 +68,7 @@ namespace asp_odata_api
             var builder = new ODataConventionModelBuilder();
             builder.EntitySet<Product>("Products");
             builder.EntitySet<Category>("Categories");
+            builder.EntitySet<Customer>("Customers");
             #endregion
 
             app.UseEndpoints(endpoints =>
