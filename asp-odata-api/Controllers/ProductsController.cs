@@ -29,10 +29,13 @@ namespace asp_odata_api.Controllers
             return Ok(_context.Products.ToList());
         }
 
-        [EnableQuery]
+        [HttpGet("(key)")]
         public ActionResult Get(int key)
         {
-            return Ok(_context.Products.Find(key));
+            if (key == 0)
+                return BadRequest();
+            else
+                return Ok(_context.Products.Find(key));
         }
 
     }
