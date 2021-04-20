@@ -37,7 +37,10 @@ namespace asp_odata_api
             services.AddControllers();
             services.AddOData();
 
-            services.AddDbContext<ApplicationContext>(op => op.UseSqlServer(Configuration.GetConnectionString("SqlServer")));
+            services.AddDbContext<ApplicationContext>(op =>
+                op.UseSqlServer(Configuration.GetConnectionString("SqlServer"),
+                    options => options.EnableRetryOnFailure()
+            ));
 
             services.AddScoped(factory =>
             {
